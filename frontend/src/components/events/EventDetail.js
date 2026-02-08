@@ -15,11 +15,11 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import { ArrowBack, Calendar, LocationOn, People } from '@mui/icons-material';
+import { ArrowBack, CalendarToday, LocationOn, People } from '@mui/icons-material';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function EventDetail() {
   const { id } = useParams();
@@ -143,7 +143,7 @@ function EventDetail() {
           <Grid item xs={12} md={4}>
             <Paper variant="outlined" sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Calendar sx={{ mr: 1, color: 'text.secondary' }} />
+                <CalendarToday sx={{ mr: 1, color: 'text.secondary' }} />
                 <Box>
                   <Typography variant="body2" color="text.secondary">
                     Date & Time
