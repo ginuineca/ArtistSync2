@@ -13,7 +13,7 @@ export const authMiddleware = async (req, res, next) => {
         }
 
         // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_here');
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET || process.env.JWT_SECRET || 'your_jwt_secret_here');
         if (decoded.type !== 'access') {
             return res.status(401).json({
                 success: false,
