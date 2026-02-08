@@ -134,6 +134,7 @@ export const AuthProvider = ({ children }) => {
       }
     );
     return () => axios.interceptors.response.eject(interceptor);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -6,19 +6,15 @@ import {
   Paper,
   Typography,
   TextField,
-  Button,
   Avatar,
   List,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
   IconButton,
   AppBar,
   Toolbar,
-  Chip,
 } from '@mui/material';
 import { ArrowBack, Send, FiberManualRecord } from '@mui/icons-material';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import axios from 'axios';
 import { useSocket } from '../../contexts/SocketContext';
 
@@ -27,7 +23,6 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 function Conversation() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const socket = useSocket();
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState([]);
@@ -86,6 +81,7 @@ function Conversation() {
         socket.leaveConversation(id);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, socket]);
 
   useEffect(() => {
@@ -106,6 +102,7 @@ function Conversation() {
     if (id) {
       loadMessages();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {

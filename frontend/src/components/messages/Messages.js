@@ -13,7 +13,6 @@ import {
   TextField,
   Paper,
   Divider,
-  IconButton,
   Chip,
 } from '@mui/material';
 import { Search, Notifications, FiberManualRecord } from '@mui/icons-material';
@@ -27,7 +26,6 @@ function Messages() {
   const navigate = useNavigate();
   const socket = useSocket();
   const [searchTerm, setSearchTerm] = useState('');
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const { data: conversationsData, isLoading, refetch } = useQuery(
     'conversations',
@@ -48,16 +46,10 @@ function Messages() {
       refetch();
     };
 
-    const handleUnreadCount = ({ unreadCount: count }) => {
-      setUnreadCount(count);
-    };
-
     socket.socket.on('message:new', handleMessageNew);
-    socket.socket.on('notification:unread_count', handleUnreadCount);
 
     return () => {
       socket.socket?.off('message:new', handleMessageNew);
-      socket.socket?.off('notification:unread_count', handleUnreadCount);
     };
   }, [socket.socket, refetch]);
 
