@@ -17,7 +17,7 @@ import {
   Toolbar,
   Chip,
 } from '@mui/material';
-import { ArrowBack, Send, Circle } from '@mui/icons-material';
+import { ArrowBack, Send, FiberManualRecord } from '@mui/icons-material';
 import { useQuery, useQueryClient } from 'react-query';
 import axios from 'axios';
 import { useSocket } from '../../contexts/SocketContext';
@@ -183,7 +183,7 @@ function Conversation() {
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               {socket.isUserOnline(conversation?.participants?.find(p => p.user._id !== localStorage.getItem('userId'))?.user?._id) && (
-                <Circle sx={{ fontSize: 8, color: 'success.main' }} />
+                <FiberManualRecord sx={{ fontSize: 8, color: 'success.main' }} />
               )}
               {isOtherUserTyping && (
                 <Typography variant="caption" color="primary">

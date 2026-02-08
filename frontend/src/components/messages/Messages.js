@@ -15,9 +15,8 @@ import {
   Divider,
   IconButton,
   Chip,
-  Circle,
 } from '@mui/material';
-import { Search, Notifications } from '@mui/icons-material';
+import { Search, Notifications, FiberManualRecord } from '@mui/icons-material';
 import { useQuery } from 'react-query';
 import axios from 'axios';
 import { useSocket } from '../../contexts/SocketContext';
@@ -187,7 +186,7 @@ function Messages() {
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {isUserOnline(conv) && (
-                          <Circle sx={{ fontSize: 10, color: 'success.main' }} />
+                          <FiberManualRecord sx={{ fontSize: 10, color: 'success.main' }} />
                         )}
                         <Typography variant="caption" color="text.secondary">
                           {conv.updatedAt && formatTime(conv.updatedAt)}
