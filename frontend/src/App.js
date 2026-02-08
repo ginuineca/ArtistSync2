@@ -9,6 +9,11 @@ import Dashboard from './components/dashboard/Dashboard';
 import Profile from './components/profile/Profile';
 import Events from './components/events/Events';
 import EventDetail from './components/events/EventDetail';
+import CreateEvent from './components/events/CreateEvent';
+import EditEvent from './components/events/EditEvent';
+import MyEvents from './components/events/MyEvents';
+import Notifications from './components/notifications/Notifications';
+import SearchUsers from './components/search/SearchUsers';
 import Messages from './components/messages/Messages';
 import Conversation from './components/messages/Conversation';
 
@@ -81,7 +86,12 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="profile" element={<Profile />} />
           <Route path="events" element={<Events />} />
+          <Route path="events/my" element={<MyEvents />} />
+          <Route path="events/new" element={<CreateEvent />} />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="events/:id/edit" element={<EditEvent />} />
           <Route path="events/:id" element={<EventDetail />} />
+          <Route path="search" element={<SearchUsers />} />
           <Route path="messages" element={<Messages />} />
           <Route path="messages/:id" element={<Conversation />} />
         </Route>

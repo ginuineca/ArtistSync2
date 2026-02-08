@@ -15,15 +15,17 @@ import {
   ListItemAvatar,
   ListItemText,
 } from '@mui/material';
-import { ArrowBack, CalendarToday, LocationOn, People } from '@mui/icons-material';
+import { ArrowBack, CalendarToday, LocationOn, People, Edit } from '@mui/icons-material';
 import { useQuery } from 'react-query';
 import axios from 'axios';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: eventData, isLoading } = useQuery(
     ['event', id],
@@ -61,10 +63,20 @@ function EventDetail() {
       <Button
         startIcon={<ArrowBack />}
         onClick={() => navigate('/events')}
-        sx={{ mb: 3 }}
+        sx={{ mb: 3, mr: 2 }}
       >
         Back to Events
       </Button>
+      {event.venue?.user === user?.id && (
+        <Button
+          variant="outlined"
+          startIcon={<Edit />}
+          onClick={() => navigate(`/events/${id}/edit`)}
+          sx={{ mb: 3 }}
+        >
+          Edit Event
+        </Button>
+      )}
 
       <Paper sx={{ p: 4 }}>
         <Grid container spacing={4}>

@@ -13,6 +13,7 @@ import {
   ListItemText,
   Divider,
   Avatar,
+  Badge,
   Menu,
   MenuItem,
 } from '@mui/material';
@@ -22,9 +23,11 @@ import {
   Person,
   Event,
   Message,
+  Notifications as NotificationsIcon,
   Logout,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSocket } from '../../contexts/SocketContext';
 
 const drawerWidth = 240;
 
@@ -32,6 +35,8 @@ const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
   { text: 'Profile', icon: <Person />, path: '/profile' },
   { text: 'Events', icon: <Event />, path: '/events' },
+  { text: 'My Events', icon: <Event />, path: '/events/my' },
+  { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications', badge: unreadCount },
   { text: 'Messages', icon: <Message />, path: '/messages' },
 ];
 
@@ -41,6 +46,8 @@ function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { notifications } = useSocket();
+  const unreadCount = notifications.filter(n => n.type === 'notification' && !n.data.read).length;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -84,7 +91,15 @@ function Layout() {
               },
             }}
           >
-            <ListItemIcon sx={{ color: 'inherit' }}>{item.icon}</ListItemIcon>
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              {item.badge !== undefined ? (
+                <Badge badgeContent={item.badge} color="error">
+                  {item.icon}
+                </Badge>
+              ) : (
+                item.icon
+              )}
+            </ListItemIcon>
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
