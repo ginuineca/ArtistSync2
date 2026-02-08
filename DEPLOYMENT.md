@@ -1,6 +1,6 @@
 # 🚀 ArtistSync Deployment Guide
 
-This guide will walk you through deploying ArtistSync to production using **Vercel** (frontend) and **Railway** (backend) with **MongoDB Atlas** (database).
+This guide will walk you through deploying ArtistSync to production using **Vercel** (frontend) and **Render** (backend) with **MongoDB Atlas** (database).
 
 ---
 
@@ -8,7 +8,7 @@ This guide will walk you through deploying ArtistSync to production using **Verc
 
 - GitHub account with the repository pushed
 - Vercel account (https://vercel.com)
-- Railway account (https://railway.app)
+- Render account (https://render.com)
 - MongoDB Atlas account (https://mongodb.com/cloud/atlas)
 
 ---
@@ -53,46 +53,50 @@ mongodb+srv://artistsync-admin:<password>@artistsync-cluster.xxxxx.mongodb.net/?
 
 ---
 
-## Step 2: Deploy Backend to Railway
+## Step 2: Deploy Backend to Render
 
-### 2.1 Create Railway Project
+### 2.1 Create Render Account
 
-1. Go to https://railway.app
-2. Click **"New Project"** → **"Deploy from GitHub repo"**
-3. Select your ArtistSync repository
-4. Railway will auto-detect the backend
+1. Go to https://render.com and sign up/login
+2. Connect your GitHub account
 
-### 2.2 Configure Service
+### 2.2 Create New Web Service
 
-1. Root Directory: `backend`
-2. Build Command: `npm install`
-3. Start Command: `npm start`
+1. Click **"New +"** → **"Web Service"**
+2. Select your ArtistSync2 repository
+3. Configure the service:
 
-### 2.3 Add MongoDB Plugin
+| Setting | Value |
+|---------|-------|
+| Name | `artistsync-backend` |
+| Root Directory | `backend` |
+| Environment | `Node` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
+| Plan | **Free** |
 
-1. In your Railway project, click **"New Service"**
-2. Select **"MongoDB"** from plugins
-3. Railway will automatically create a database
+### 2.3 Set Environment Variables
 
-### 2.4 Set Environment Variables
-
-Click on your backend service → **Variables** → **New Variable**:
+In your Render service → **Environment** tab, add these variables:
 
 | Variable | Value |
 |----------|-------|
 | `PORT` | `5000` |
 | `NODE_ENV` | `production` |
-| `MONGODB_URI` | `${{MongoDB.MONGODB_URI}}` |
-| `JWT_SECRET` | Generate with `openssl rand -base64 64` |
-| `JWT_ACCESS_TOKEN_SECRET` | Generate with `openssl rand -base64 64` |
-| `JWT_REFRESH_TOKEN_SECRET` | Generate with `openssl rand -base64 64` |
+| `MONGODB_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | Generate a secure random string |
+| `JWT_ACCESS_TOKEN_SECRET` | Generate a secure random string |
+| `JWT_REFRESH_TOKEN_SECRET` | Generate a secure random string |
+| `JWT_ACCESS_EXPIRES_IN` | `15m` |
+| `JWT_REFRESH_EXPIRES_IN` | `7d` |
 | `FRONTEND_URL` | (Add later after Vercel deployment) |
+| `CORS_ORIGIN` | (Add later after Vercel deployment) |
 
-### 2.3 Deploy
+### 2.4 Deploy
 
-1. Click **"Deploy"**
-2. Railway will build and deploy your backend
-3. Get your backend URL: `https://your-backend.railway.app`
+1. Click **"Create Web Service"**
+2. Render will build and deploy (takes 5-10 minutes)
+3. Get your backend URL: `https://artistsync-backend.onrender.com`
 
 ---
 
@@ -120,7 +124,7 @@ In Vercel project → **Settings** → **Environment Variables**:
 
 | Variable | Value |
 |----------|-------|
-| `REACT_APP_API_URL` | Your Railway backend URL |
+| `REACT_APP_API_URL` | Your Render backend URL (e.g., `https://artistsync-backend.onrender.com`) |
 
 ### 3.4 Deploy
 
@@ -132,20 +136,16 @@ In Vercel project → **Settings** → **Environment Variables**:
 
 ## Step 4: Update CORS Configuration
 
-Now that you have both URLs, update the backend CORS:
+Now that you have both URLs, update the configuration:
 
-### Railway Backend
-Add your Vercel frontend URL to `CORS_ORIGIN`:
-
-```
-CORS_ORIGIN=https://your-project.vercel.app
-```
+### Render Backend
+Add your Vercel frontend URL to environment variables:
+- `FRONTEND_URL`: `https://your-project.vercel.app`
+- `CORS_ORIGIN`: `https://your-project.vercel.app`
 
 ### Vercel Frontend
-Your `REACT_APP_API_URL` should be:
-```
-REACT_APP_API_URL=https://your-backend.railway.app
-```
+Set environment variable in Vercel dashboard:
+- `REACT_APP_API_URL`: Your Render backend URL (e.g., `https://artistsync-backend.onrender.com`)
 
 ---
 
@@ -153,13 +153,13 @@ REACT_APP_API_URL=https://your-backend.railway.app
 
 ### 1. Test Backend Health
 ```bash
-curl https://your-backend.railway.app/health
+curl https://artistsync-backend.onrender.com/health
 ```
 Expected: `{"status":"ok"}`
 
 ### 2. Test Registration
 ```bash
-curl -X POST https://your-backend.railway.app/api/auth/register \
+curl -X POST https://artistsync-backend.onrender.com/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"test","email":"test@test.com","password":"test123456","name":"Test"}'
 ```
@@ -180,10 +180,10 @@ Navigate to your Vercel URL and test:
 2. Add your custom domain
 3. Update DNS records as instructed
 
-### Railway (Backend)
-1. Go to project → **Settings** → **Domains**
+### Render (Backend)
+1. Go to service → **Settings** → **Custom Domains**
 2. Add custom domain
-3. Update DNS records
+3. Update DNS records as instructed
 
 ---
 
@@ -214,10 +214,10 @@ The `.github/workflows/ci-cd.yml` file includes:
 
 ## 📊 Monitoring
 
-### Railway
+### Render
 - Built-in logs
 - Metrics dashboard
-- Error tracking
+- Health checks
 
 ### Vercel
 - Analytics
@@ -233,10 +233,33 @@ The `.github/workflows/ci-cd.yml` file includes:
 
 ## 🐛 Troubleshooting
 
+### 404 Error on Vercel Deployment
+
+**Issue:** Seeing "404 Not Found" when visiting your Vercel URL
+
+**Possible Causes & Fixes:**
+
+1. **Build still in progress**
+   - Check Vercel dashboard → Deployments tab
+   - Wait for "Ready" status (can take 2-5 minutes)
+
+2. **Missing REACT_APP_API_URL**
+   - Go to Vercel Project → Settings → Environment Variables
+   - Add: `REACT_APP_API_URL` = `https://your-backend.onrender.com`
+   - Trigger a new deployment after adding
+
+3. **Build error**
+   - Check deployment logs in Vercel dashboard
+   - Common errors: Missing dependencies, TypeScript errors
+
+4. **Wait a few minutes**
+   - DNS propagation can take 1-2 minutes
+   - Try clearing browser cache
+
 ### Frontend can't connect to backend
 
 **Issue:** CORS errors
-**Fix:** Add frontend URL to `CORS_ORIGIN` in Railway
+**Fix:** Add frontend URL to `CORS_ORIGIN` in Render environment variables
 
 **Issue:** Mixed content
 **Fix:** Ensure all API calls use `https://`
@@ -258,7 +281,7 @@ The `.github/workflows/ci-cd.yml` file includes:
 | Service | Tier | Cost |
 |---------|------|------|
 | Vercel | Hobby | $0 |
-| Railway | Free | $0 (includes $5 free credit) |
+| Render | Free | $0 |
 | MongoDB Atlas | M0 | $0 |
 | **Total** | | **$0** |
 
