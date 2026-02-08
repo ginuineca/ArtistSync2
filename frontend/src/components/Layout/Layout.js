@@ -25,20 +25,15 @@ import {
   Message,
   Notifications as NotificationsIcon,
   Logout,
+  Search,
+  WorkOutline,
+  Settings,
+  RateReview,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
 
 const drawerWidth = 240;
-
-const menuItems = [
-  { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-  { text: 'Profile', icon: <Person />, path: '/profile' },
-  { text: 'Events', icon: <Event />, path: '/events' },
-  { text: 'My Events', icon: <Event />, path: '/events/my' },
-  { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications', badge: unreadCount },
-  { text: 'Messages', icon: <Message />, path: '/messages' },
-];
 
 function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -48,6 +43,19 @@ function Layout() {
   const { user, logout } = useAuth();
   const { notifications } = useSocket();
   const unreadCount = notifications.filter(n => n.type === 'notification' && !n.data.read).length;
+
+  const menuItems = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+    { text: 'Profile', icon: <Person />, path: '/profile' },
+    { text: 'Events', icon: <Event />, path: '/events' },
+    { text: 'My Events', icon: <Event />, path: '/events/my' },
+    { text: 'Search', icon: <Search />, path: '/search' },
+    { text: 'Portfolio', icon: <WorkOutline />, path: '/portfolio' },
+    { text: 'Reviews', icon: <RateReview />, path: '/reviews' },
+    { text: 'Notifications', icon: <NotificationsIcon />, path: '/notifications', badge: unreadCount },
+    { text: 'Messages', icon: <Message />, path: '/messages' },
+    { text: 'Settings', icon: <Settings />, path: '/settings' },
+  ];
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -145,6 +153,10 @@ function Layout() {
             <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/profile'); }}>
               <Person sx={{ mr: 1 }} /> Profile
             </MenuItem>
+            <MenuItem onClick={() => { handleProfileMenuClose(); navigate('/settings'); }}>
+              <Settings sx={{ mr: 1 }} /> Settings
+            </MenuItem>
+            <Divider />
             <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1 }} /> Logout
             </MenuItem>

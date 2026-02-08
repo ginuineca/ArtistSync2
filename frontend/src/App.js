@@ -14,6 +14,9 @@ import EditEvent from './components/events/EditEvent';
 import MyEvents from './components/events/MyEvents';
 import Notifications from './components/notifications/Notifications';
 import SearchUsers from './components/search/SearchUsers';
+import Reviews from './components/reviews/Reviews';
+import Portfolio from './components/portfolio/Portfolio';
+import Settings from './components/settings/Settings';
 import Messages from './components/messages/Messages';
 import Conversation from './components/messages/Conversation';
 
@@ -92,6 +95,9 @@ function App() {
           <Route path="events/:id/edit" element={<EditEvent />} />
           <Route path="events/:id" element={<EventDetail />} />
           <Route path="search" element={<SearchUsers />} />
+          <Route path="reviews" element={<Reviews />} />
+          <Route path="portfolio" element={<Portfolio />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="messages" element={<Messages />} />
           <Route path="messages/:id" element={<Conversation />} />
         </Route>
