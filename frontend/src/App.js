@@ -17,6 +17,7 @@ import EditEvent from './components/events/EditEvent';
 import MyEvents from './components/events/MyEvents';
 import Favorites from './components/events/Favorites';
 import Bookings from './components/bookings/Bookings';
+import AdminDashboard from './components/admin/AdminDashboard';
 import Notifications from './components/notifications/Notifications';
 import SearchUsers from './components/search/SearchUsers';
 import Reviews from './components/reviews/Reviews';
@@ -100,6 +101,7 @@ function App() {
           <Route path="events/my" element={<MyEvents />} />
           <Route path="events/favorites" element={<Favorites />} />
           <Route path="bookings" element={<Bookings />} />
+          <Route path="admin" element={<AdminDashboard />} />
           <Route path="events/new" element={<CreateEvent />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="events/:id/edit" element={<EditEvent />} />

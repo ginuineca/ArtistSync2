@@ -31,6 +31,7 @@ import {
   RateReview,
   Favorite,
   BookOnline,
+  AdminPanelSettings,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
@@ -53,6 +54,7 @@ function Layout() {
     { text: 'My Events', icon: <Event />, path: '/events/my' },
     { text: 'Favorites', icon: <Favorite />, path: '/events/favorites' },
     { text: 'Bookings', icon: <BookOnline />, path: '/bookings' },
+    ...(user?.role === 'admin' ? [{ text: 'Admin', icon: <AdminPanelSettings />, path: '/admin' }] : []),
     { text: 'Search', icon: <Search />, path: '/search' },
     { text: 'Portfolio', icon: <WorkOutline />, path: '/portfolio' },
     { text: 'Reviews', icon: <RateReview />, path: '/reviews' },
