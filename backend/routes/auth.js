@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import User from '../models/User.js';
 import Token from '../models/Token.js';
 import { authMiddleware } from '../middleware/auth.js';
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../services/email.service.js';
 
 const router = express.Router();
 
@@ -58,6 +59,11 @@ router.post('/register', async (req, res) => {
         });
 
         await user.save();
+
+        // Send welcome email
+        sendWelcomeEmail(user.email, user.name).catch(err => {
+            console.log('Failed to send welcome email:', err.message);
+        });
 
         // Generate tokens
         const accessToken = generateAccessToken(user._id);
@@ -377,12 +383,15 @@ router.post('/forgot-password', async (req, res) => {
             { upsert: true, new: true }
         );
 
-        // In production, send email here
-        // For now, return the token (remove this in production!)
+        // Create reset URL
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+
+        // Send password reset email
+        await sendPasswordResetEmail(user.email, user.name, resetUrl);
+
         res.json({
             success: true,
-            message: 'Password reset token generated (development mode)',
-            resetToken // Remove this in production!
+            message: 'If an account exists, a password reset email will be sent'
         });
     } catch (error) {
         console.error('Forgot password error:', error);

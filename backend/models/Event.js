@@ -137,6 +137,11 @@ const eventSchema = new mongoose.Schema({
             default: 0
         }
     },
+    // Track who liked this event
+    likedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     settings: {
         allowComments: {
             type: Boolean,

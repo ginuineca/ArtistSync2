@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -14,9 +14,10 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
+  IconButton,
 } from '@mui/material';
-import { ArrowBack, CalendarToday, LocationOn, People, Edit } from '@mui/icons-material';
-import { useQuery } from 'react-query';
+import { ArrowBack, CalendarToday, LocationOn, People, Edit, FavoriteBorder, Favorite } from '@mui/icons-material';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -26,12 +27,40 @@ function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const [isLiked, setIsLiked] = useState(false);
 
   const { data: eventData, isLoading } = useQuery(
     ['event', id],
     async () => {
       const response = await axios.get(`${API_URL}/api/events/${id}`);
       return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        // Check if current user has liked this event
+        if (data.event?.likedBy && user?.id) {
+          setIsLiked(data.event.likedBy.some(userId => userId === user.id));
+        }
+      }
+    }
+  );
+
+  const likeMutation = useMutation(
+    async () => {
+      const token = localStorage.getItem('accessToken');
+      const response = await axios.post(
+        `${API_URL}/api/events/${id}/like`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      return response.data;
+    },
+    {
+      onSuccess: (data) => {
+        setIsLiked(data.liked);
+        queryClient.invalidateQueries(['event', id]);
+      },
     }
   );
 
@@ -81,9 +110,23 @@ function EventDetail() {
       <Paper sx={{ p: 4 }}>
         <Grid container spacing={4}>
           <Grid item xs={12} md={8}>
-            <Typography variant="h3" gutterBottom>
-              {event.title}
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h3" gutterBottom>
+                {event.title}
+              </Typography>
+              <IconButton
+                onClick={() => likeMutation.mutate()}
+                disabled={likeMutation.isLoading}
+                color={isLiked ? 'error' : 'default'}
+              >
+                {isLiked ? <Favorite /> : <FavoriteBorder />}
+              </IconButton>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Typography variant="body2" color="text.secondary">
+                {event.meta?.likes || 0} {event.meta?.likes === 1 ? 'like' : 'likes'}
+              </Typography>
+            </Box>
 
             <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
               {event.categories?.map((cat) => (

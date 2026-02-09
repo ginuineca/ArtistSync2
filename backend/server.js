@@ -14,6 +14,7 @@ import reviewRoutes from './routes/reviewRoutes.js';
 import messageRoutes from './routes/messages.js';
 import uploadRoutes from './routes/upload.js';
 import notificationRoutes from './routes/notifications.js';
+import bookingRoutes from './routes/bookings.js';
 import { closeRedisConnections } from './services/cache.service.js';
 import { setupSocketIO } from './services/socket.service.js';
 
@@ -67,6 +68,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));

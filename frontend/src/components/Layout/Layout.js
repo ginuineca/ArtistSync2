@@ -29,6 +29,8 @@ import {
   WorkOutline,
   Settings,
   RateReview,
+  Favorite,
+  BookOnline,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSocket } from '../../contexts/SocketContext';
@@ -49,6 +51,8 @@ function Layout() {
     { text: 'Profile', icon: <Person />, path: '/profile' },
     { text: 'Events', icon: <Event />, path: '/events' },
     { text: 'My Events', icon: <Event />, path: '/events/my' },
+    { text: 'Favorites', icon: <Favorite />, path: '/events/favorites' },
+    { text: 'Bookings', icon: <BookOnline />, path: '/bookings' },
     { text: 'Search', icon: <Search />, path: '/search' },
     { text: 'Portfolio', icon: <WorkOutline />, path: '/portfolio' },
     { text: 'Reviews', icon: <RateReview />, path: '/reviews' },

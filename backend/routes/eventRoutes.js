@@ -545,13 +545,29 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
             });
         }
 
-        // Toggle like (simplified - in production, track which users liked)
-        event.meta.likes += 1;
+        // Check if user already liked this event
+        const hasLiked = event.likedBy?.some(
+            userId => userId.toString() === req.user.id
+        );
+
+        if (hasLiked) {
+            // Unlike
+            event.likedBy = event.likedBy.filter(
+                userId => userId.toString() !== req.user.id
+            );
+            event.meta.likes = Math.max(0, event.meta.likes - 1);
+        } else {
+            // Like
+            if (!event.likedBy) event.likedBy = [];
+            event.likedBy.push(req.user.id);
+            event.meta.likes += 1;
+        }
 
         await event.save();
 
         res.json({
             success: true,
+            liked: !hasLiked,
             likes: event.meta.likes
         });
     } catch (error) {
@@ -559,6 +575,32 @@ router.post('/:id/like', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error processing like'
+        });
+    }
+});
+
+// @route   GET /api/events/favorites
+// @desc    Get user's favorite events
+// @access  Private
+router.get('/favorites', authMiddleware, async (req, res) => {
+    try {
+        const events = await Event.find({
+            likedBy: req.user.id,
+            status: 'published',
+            visibility: 'public'
+        })
+            .populate('venue', 'name location profilePicture')
+            .sort({ 'date.start': 1 });
+
+        res.json({
+            success: true,
+            events
+        });
+    } catch (error) {
+        console.error('Get favorites error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching favorites'
         });
     }
 });

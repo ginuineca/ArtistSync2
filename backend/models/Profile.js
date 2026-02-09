@@ -141,8 +141,23 @@ const profileSchema = new mongoose.Schema({
         followers: {
             type: Number,
             default: 0
+        },
+        profileViews: {
+            type: Number,
+            default: 0
         }
     },
+    // Track who viewed this profile
+    views: [{
+        viewer: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        viewedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
     visibility: {
         isPublic: {
             type: Boolean,

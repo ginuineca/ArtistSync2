@@ -1,5 +1,6 @@
 import express from 'express';
 import Profile from '../models/Profile.js';
+import User from '../models/User.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -415,6 +416,105 @@ router.post('/:id/follow', authMiddleware, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error processing follow request'
+        });
+    }
+});
+
+// @route   POST /api/profile/:id/view
+// @desc    Record a profile view
+// @access  Private
+router.post('/:id/view', authMiddleware, async (req, res) => {
+    try {
+        const profileToView = await Profile.findById(req.params.id);
+
+        if (!profileToView) {
+            return res.status(404).json({
+                success: false,
+                message: 'Profile not found'
+            });
+        }
+
+        // Don't count own views
+        if (profileToView.user.toString() === req.user.id) {
+            return res.json({
+                success: true,
+                message: 'Own view not counted'
+            });
+        }
+
+        // Check if viewer has already viewed this profile (don't count duplicate views within 24 hours)
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const recentView = profileToView.views?.find(
+            v => v.viewer?.toString() === req.user.id && v.viewedAt > oneDayAgo
+        );
+
+        if (!recentView) {
+            // Add new view
+            if (!profileToView.views) profileToView.views = [];
+            profileToView.views.push({
+                viewer: req.user.id,
+                viewedAt: new Date()
+            });
+            profileToView.stats.profileViews = (profileToView.stats.profileViews || 0) + 1;
+            await profileToView.save();
+        }
+
+        res.json({
+            success: true,
+            viewCount: profileToView.stats.profileViews
+        });
+    } catch (error) {
+        console.error('Record view error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error recording view'
+        });
+    }
+});
+
+// @route   GET /api/profile/:id/views
+// @desc    Get profile view statistics
+// @access  Private (profile owner only)
+router.get('/:id/views', authMiddleware, async (req, res) => {
+    try {
+        const profile = await Profile.findById(req.params.id)
+            .populate('views.viewer', 'username name profilePicture');
+
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: 'Profile not found'
+            });
+        }
+
+        // Only allow profile owner to see detailed views
+        if (profile.user.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied'
+            });
+        }
+
+        // Get views from last 30 days
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const recentViews = profile.views?.filter(v => v.viewedAt > thirtyDaysAgo) || [];
+
+        res.json({
+            success: true,
+            stats: {
+                totalViews: profile.stats.profileViews || 0,
+                recentViews: recentViews.length,
+                viewers: recentViews.map(v => ({
+                    viewer: v.viewer,
+                    viewedAt: v.viewedAt
+                }))
+            }
+        });
+    } catch (error) {
+        console.error('Get views error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching view statistics'
         });
     }
 });

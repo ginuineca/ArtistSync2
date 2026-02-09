@@ -5,13 +5,18 @@ import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout/Layout';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
+import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import Dashboard from './components/dashboard/Dashboard';
 import Profile from './components/profile/Profile';
+import PublicProfile from './components/profile/PublicProfile';
 import Events from './components/events/Events';
 import EventDetail from './components/events/EventDetail';
 import CreateEvent from './components/events/CreateEvent';
 import EditEvent from './components/events/EditEvent';
 import MyEvents from './components/events/MyEvents';
+import Favorites from './components/events/Favorites';
+import Bookings from './components/bookings/Bookings';
 import Notifications from './components/notifications/Notifications';
 import SearchUsers from './components/search/SearchUsers';
 import Reviews from './components/reviews/Reviews';
@@ -77,6 +82,8 @@ function App() {
             </PublicRoute>
           }
         />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="/"
           element={
@@ -87,9 +94,12 @@ function App() {
         >
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="profile/:id" element={<PublicProfile />} />
           <Route path="profile" element={<Profile />} />
           <Route path="events" element={<Events />} />
           <Route path="events/my" element={<MyEvents />} />
+          <Route path="events/favorites" element={<Favorites />} />
+          <Route path="bookings" element={<Bookings />} />
           <Route path="events/new" element={<CreateEvent />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="events/:id/edit" element={<EditEvent />} />

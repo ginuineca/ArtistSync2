@@ -104,6 +104,11 @@ function LoginPage() {
               margin="normal"
               required
             />
+            <Box sx={{ textAlign: 'right' }}>
+              <Link to="/forgot-password" style={{ color: 'inherit', fontSize: '0.875rem' }}>
+                Forgot password?
+              </Link>
+            </Box>
             <Button
               type="submit"
               fullWidth
