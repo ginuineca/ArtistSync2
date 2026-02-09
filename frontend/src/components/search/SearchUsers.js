@@ -19,12 +19,29 @@ import {
   Paper,
   Tabs,
   Tab,
+  Collapse,
+  Alert,
 } from '@mui/material';
-import { Search, Person, PersonAdd, LocationOn } from '@mui/icons-material';
+import {
+  Search,
+  Person,
+  PersonAdd,
+  LocationOn,
+  ExpandMore,
+  ExpandLess,
+  FilterList,
+  Clear,
+} from '@mui/icons-material';
 import { useQuery, useMutation } from 'react-query';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+const GENRES = [
+  'Rock', 'Pop', 'Hip-Hop', 'Jazz', 'Blues', 'Country',
+  'Electronic', 'Classical', 'R&B', 'Metal', 'Folk', 'Reggae',
+  'Latin', 'Indie', 'Punk', 'Soul', 'Funk', 'Disco', 'House'
+];
 
 function TabPanel({ children, value, index }) {
   return (
@@ -39,6 +56,11 @@ function SearchUsers() {
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState('');
+  const [genreFilter, setGenreFilter] = useState('');
+  const [locationFilter, setLocationFilter] = useState('');
+  const [eventDateFilter, setEventDateFilter] = useState('');
+  const [eventCategoryFilter, setEventCategoryFilter] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Debounce search
@@ -51,21 +73,27 @@ function SearchUsers() {
 
   // Search query
   const { data: searchData, isLoading } = useQuery(
-    ['users-search', debouncedSearch, userTypeFilter, tabValue],
+    ['users-search', debouncedSearch, userTypeFilter, genreFilter, locationFilter, tabValue, eventDateFilter, eventCategoryFilter],
     async () => {
-      if (!debouncedSearch && userTypeFilter === '') {
-        return { users: [] };
-      }
       const params = new URLSearchParams();
       if (debouncedSearch) params.append('search', debouncedSearch);
       if (userTypeFilter) params.append('userType', userTypeFilter);
+      if (genreFilter) params.append('genre', genreFilter);
+      if (locationFilter) params.append('location', locationFilter);
+      if (eventDateFilter) params.append('date', eventDateFilter);
+      if (eventCategoryFilter) params.append('category', eventCategoryFilter);
+
+      // Only search if we have filters
+      if (!debouncedSearch && !userTypeFilter && !genreFilter && !locationFilter && !eventDateFilter && !eventCategoryFilter) {
+        return tabValue === 0 ? { profiles: [] } : { events: [] };
+      }
 
       const endpoint = tabValue === 0 ? '/api/profile/search' : '/api/events/search';
       const response = await axios.get(`${API_URL}${endpoint}?${params}`);
       return response.data;
     },
     {
-      enabled: !!(debouncedSearch || userTypeFilter)
+      enabled: true
     }
   );
 
@@ -93,7 +121,6 @@ function SearchUsers() {
     },
     {
       onSuccess: () => {
-        // Refetch queries
         window.location.reload();
       }
     }
@@ -101,16 +128,24 @@ function SearchUsers() {
 
   const handleFollow = (profileId, isFollowing) => {
     if (isFollowing) {
-      // Unfollow - would need to implement unfollow endpoint
       navigate(`/profile/${profileId}`);
     } else {
       followMutation.mutate({ profileId });
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setUserTypeFilter('');
+    setGenreFilter('');
+    setLocationFilter('');
+    setEventDateFilter('');
+    setEventCategoryFilter('');
+  };
+
+  const hasActiveFilters = searchTerm || userTypeFilter || genreFilter || locationFilter || eventDateFilter || eventCategoryFilter;
+
   const renderUserCard = (item) => {
-    // For tabValue === 0, item is { profile }
-    // For tabValue === 1, item is { event }
     if (tabValue === 0) {
       const profile = item.profile;
       const user = profile.user;
@@ -192,7 +227,6 @@ function SearchUsers() {
         </Grid>
       );
     } else {
-      // Event card
       const event = item.event;
       return (
         <Grid item xs={12} sm={6} md={4} key={event._id}>
@@ -236,7 +270,7 @@ function SearchUsers() {
     }
   };
 
-  const results = searchData?.users || searchData?.events || [];
+  const results = searchData?.profiles || searchData?.events || searchData?.users || [];
 
   return (
     <Container maxWidth="lg">
@@ -254,8 +288,9 @@ function SearchUsers() {
         </Tabs>
       </Paper>
 
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+      {/* Search Bar */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', mb: 2 }}>
           <TextField
             fullWidth
             placeholder="Search..."
@@ -267,26 +302,117 @@ function SearchUsers() {
               ),
             }}
           />
-        </Grid>
+          <Button
+            variant="outlined"
+            startIcon={showAdvancedFilters ? <ExpandLess /> : <ExpandMore />}
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          >
+            Filters
+          </Button>
+          {hasActiveFilters && (
+            <Button
+              variant="text"
+              startIcon={<Clear />}
+              onClick={clearFilters}
+              color="error"
+            >
+              Clear
+            </Button>
+          )}
+        </Box>
 
-        {tabValue === 0 && (
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <InputLabel>User Type</InputLabel>
-              <Select
-                value={userTypeFilter}
-                onChange={(e) => setUserTypeFilter(e.target.value)}
-                label="User Type"
-              >
-                <MenuItem value="">All Types</MenuItem>
-                <MenuItem value="artist">Artists</MenuItem>
-                <MenuItem value="venue">Venues</MenuItem>
-                <MenuItem value="fan">Fans</MenuItem>
-              </Select>
-            </FormControl>
+        {/* Advanced Filters */}
+        <Collapse in={showAdvancedFilters}>
+          <Grid container spacing={2}>
+            {tabValue === 0 && (
+              <>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>User Type</InputLabel>
+                    <Select
+                      value={userTypeFilter}
+                      onChange={(e) => setUserTypeFilter(e.target.value)}
+                      label="User Type"
+                    >
+                      <MenuItem value="">All Types</MenuItem>
+                      <MenuItem value="artist">Artists</MenuItem>
+                      <MenuItem value="venue">Venues</MenuItem>
+                      <MenuItem value="fan">Fans</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>Genre</InputLabel>
+                    <Select
+                      value={genreFilter}
+                      onChange={(e) => setGenreFilter(e.target.value)}
+                      label="Genre"
+                    >
+                      <MenuItem value="">All Genres</MenuItem>
+                      {GENRES.map((genre) => (
+                        <MenuItem key={genre} value={genre}>{genre}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Location"
+                    value={locationFilter}
+                    onChange={(e) => setLocationFilter(e.target.value)}
+                    placeholder="City, State..."
+                  />
+                </Grid>
+              </>
+            )}
+            {tabValue === 1 && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth>
+                    <InputLabel>Category</InputLabel>
+                    <Select
+                      value={eventCategoryFilter}
+                      onChange={(e) => setEventCategoryFilter(e.target.value)}
+                      label="Category"
+                    >
+                      <MenuItem value="">All Categories</MenuItem>
+                      <MenuItem value="concert">Concert</MenuItem>
+                      <MenuItem value="festival">Festival</MenuItem>
+                      <MenuItem value="club_night">Club Night</MenuItem>
+                      <MenuItem value="private_event">Private Event</MenuItem>
+                      <MenuItem value="workshop">Workshop</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Date"
+                    value={eventDateFilter}
+                    onChange={(e) => setEventDateFilter(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                  />
+                </Grid>
+              </>
+            )}
           </Grid>
-        )}
-      </Grid>
+        </Collapse>
+      </Paper>
+
+      {/* Active Filters Display */}
+      {hasActiveFilters && (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+          {searchTerm && <Chip label={`Search: "${searchTerm}"`} onDelete={() => setSearchTerm('')} />}
+          {userTypeFilter && <Chip label={`Type: ${userTypeFilter}`} onDelete={() => setUserTypeFilter('')} />}
+          {genreFilter && <Chip label={`Genre: ${genreFilter}`} onDelete={() => setGenreFilter('')} />}
+          {locationFilter && <Chip label={`Location: ${locationFilter}`} onDelete={() => setLocationFilter('')} />}
+          {eventCategoryFilter && <Chip label={`Category: ${eventCategoryFilter}`} onDelete={() => setEventCategoryFilter('')} />}
+          {eventDateFilter && <Chip label={`Date: ${eventDateFilter}`} onDelete={() => setEventDateFilter('')} />}
+        </Box>
+      )}
 
       {isLoading ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -294,10 +420,19 @@ function SearchUsers() {
         </Box>
       ) : results.length === 0 ? (
         <Box sx={{ textAlign: 'center', py: 4 }}>
-          <Person sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary">
-            {searchTerm || userTypeFilter ? 'No results found' : 'Start searching to discover people and events'}
-          </Typography>
+          {hasActiveFilters ? (
+            <>
+              <Alert severity="info" sx={{ mb: 2 }}>No results match your filters</Alert>
+              <Button onClick={clearFilters} variant="outlined">Clear Filters</Button>
+            </>
+          ) : (
+            <>
+              <Person sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                Start searching to discover people and events
+              </Typography>
+            </>
+          )}
         </Box>
       ) : (
         <Grid container spacing={3}>
